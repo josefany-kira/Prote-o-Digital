@@ -1,0 +1,179 @@
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Amigo</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: auto; padding: 20px; }
+    .hidden { display: none; }
+    input, textarea, button { width: 100%; margin: 8px 0; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+    button { background: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background: #45a049; }
+    .message { display: flex; align-items: flex-start; margin-bottom: 10px; }
+    .message img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; }
+    .profile-link { cursor: pointer; color: blue; text-decoration: underline; }
+    #chat-box, #chat-privado-box { max-height: 300px; overflow-y: auto; background: #fff; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container"><!-- Login -->
+<div id="login-section">
+  <h2>Entrar no Chat</h2>
+  <input type="text" id="login-nome" placeholder="Seu nome" required>
+  <input type="email" id="login-email" placeholder="Seu e-mail" required>
+  <input type="text" id="login-usuario" placeholder="Nome de usuário" required>
+  <button onclick="prosseguirParaPerfil()">Prosseguir</button>
+</div>
+
+<!-- Criação de Perfil -->
+<div id="perfil-section" class="hidden">
+  <h2>Criação de Perfil</h2>
+  <input type="file" id="foto" accept="image/*">
+  <textarea id="experiencia" placeholder="Conte um pouco sobre você..."></textarea>
+  <form action="https://formsubmit.co/josefanykira@gmail.com" method="POST">
+    <input type="hidden" name="nome" id="form-nome">
+    <input type="hidden" name="email" id="form-email">
+    <input type="hidden" name="usuario" id="form-usuario">
+    <input type="hidden" name="experiencia" id="form-experiencia">
+    <button type="submit" onclick="salvarPerfil()">Enviar para aprovação</button>
+  </form>
+</div>
+
+<!-- Área do Admin -->
+<div id="admin-section" class="hidden">
+  <h2>Área do Administrador</h2>
+  <div id="pendentes"></div>
+</div>
+
+<!-- Chat Geral -->
+<div id="chat-section" class="hidden">
+  <h2>Chat Geral</h2>
+  <div id="chat-box"></div>
+  <textarea id="mensagem" placeholder="Digite sua mensagem..."></textarea>
+  <button onclick="enviarMensagem()">Enviar</button>
+</div>
+
+<!-- Chat Privado -->
+<div id="chat-privado-section" class="hidden">
+  <h2>Chat com <span id="privado-com"></span></h2>
+  <div id="chat-privado-box"></div>
+  <textarea id="mensagem-privada" placeholder="Mensagem privada..."></textarea>
+  <button onclick="enviarMensagemPrivada()">Enviar</button>
+</div>
+
+  </div>  <script>
+    const loginSection = document.getElementById('login-section');
+    const perfilSection = document.getElementById('perfil-section');
+    const adminSection = document.getElementById('admin-section');
+    const chatSection = document.getElementById('chat-section');
+    const chatPrivadoSection = document.getElementById('chat-privado-section');
+    const pendentesDiv = document.getElementById('pendentes');
+    const chatBox = document.getElementById('chat-box');
+    const chatPrivadoBox = document.getElementById('chat-privado-box');
+    const privadoCom = document.getElementById('privado-com');
+
+    let usuarioAtual = null;
+    let usuarioPrivado = null;
+
+    function prosseguirParaPerfil() {
+      const nome = document.getElementById('login-nome').value;
+      const email = document.getElementById('login-email').value;
+      const usuario = document.getElementById('login-usuario').value;
+
+      if (!nome || !email || !usuario) return alert('Preencha todos os campos.');
+
+      sessionStorage.setItem('nome', nome);
+      sessionStorage.setItem('email', email);
+      sessionStorage.setItem('usuario', usuario);
+
+      document.getElementById('form-nome').value = nome;
+      document.getElementById('form-email').value = email;
+      document.getElementById('form-usuario').value = usuario;
+
+      loginSection.classList.add('hidden');
+      perfilSection.classList.remove('hidden');
+
+      if (usuario === 'admin') mostrarAdmin();
+    }
+
+    function salvarPerfil() {
+      const experiencia = document.getElementById('experiencia').value;
+      const usuario = sessionStorage.getItem('usuario');
+      const foto = document.getElementById('foto').files[0];
+
+      if (!experiencia || !foto) return alert('Preencha tudo e envie uma foto.');
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const perfil = {
+          nome: sessionStorage.getItem('nome'),
+          email: sessionStorage.getItem('email'),
+          usuario,
+          experiencia,
+          foto: e.target.result,
+          aprovado: false
+        };
+        localStorage.setItem(`perfil_${usuario}`, JSON.stringify(perfil));
+      };
+      reader.readAsDataURL(foto);
+    }
+
+    function mostrarAdmin() {
+      loginSection.classList.add('hidden');
+      perfilSection.classList.add('hidden');
+      adminSection.classList.remove('hidden');
+
+      pendentesDiv.innerHTML = '';
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('perfil_')) {
+          const perfil = JSON.parse(localStorage.getItem(key));
+          if (!perfil.aprovado) {
+            const div = document.createElement('div');
+            div.innerHTML = `<b>${perfil.usuario}</b>: ${perfil.nome}<br>${perfil.experiencia}<br><button onclick="aprovar('${perfil.usuario}')">Aprovar</button><hr>`;
+            pendentesDiv.appendChild(div);
+          }
+        }
+      });
+    }
+
+    function aprovar(usuario) {
+      const perfil = JSON.parse(localStorage.getItem(`perfil_${usuario}`));
+      perfil.aprovado = true;
+      localStorage.setItem(`perfil_${usuario}`, JSON.stringify(perfil));
+      alert(`${usuario} aprovado!`);
+      mostrarAdmin();
+    }
+
+    function enviarMensagem() {
+      const texto = document.getElementById('mensagem').value;
+      const usuario = sessionStorage.getItem('usuario');
+      const perfil = JSON.parse(localStorage.getItem(`perfil_${usuario}`));
+
+      if (!texto) return;
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `<img src="${perfil.foto}"/><div><span class='profile-link' onclick="abrirChatPrivado('${usuario}')">${perfil.nome}</span><br>${texto}</div>`;
+      chatBox.appendChild(div);
+      document.getElementById('mensagem').value = '';
+    }
+
+    function abrirChatPrivado(usuario) {
+      usuarioPrivado = usuario;
+      privadoCom.innerText = usuario;
+      chatSection.classList.add('hidden');
+      chatPrivadoSection.classList.remove('hidden');
+    }
+
+    function enviarMensagemPrivada() {
+      const texto = document.getElementById('mensagem-privada').value;
+      const usuario = sessionStorage.getItem('usuario');
+      if (!texto) return;
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `<b>${usuario}</b>: ${texto}`;
+      chatPrivadoBox.appendChild(div);
+      document.getElementById('mensagem-privada').value = '';
+    }
+  </script></body>
+  </html>
