@@ -30,40 +30,15 @@
     }
 
     .content {
-      display: flex;
       width: 100%;
       background: white;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      overflow: hidden;
-      max-width: 900px;
-    }
-
-    .left-side {
-      flex: 1;
-      background-color: #1877f2;
-      color: white;
       padding: 40px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      max-width: 500px;
     }
 
-    .left-side h1 {
-      font-size: 36px;
-      margin-bottom: 20px;
-    }
-
-    .left-side p {
-      font-size: 18px;
-    }
-
-    .right-side {
-      flex: 1;
-      padding: 40px;
-    }
-
-    .right-side h2 {
+    h2 {
       margin-bottom: 20px;
       font-size: 26px;
       color: #333;
@@ -96,17 +71,15 @@
       background-color: #155db8;
     }
 
-    @media (max-width: 768px) {
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
       .content {
-        flex-direction: column;
-      }
-
-      .left-side, .right-side {
         padding: 20px;
-      }
-
-      .left-side h1 {
-        font-size: 28px;
       }
     }
   </style>
@@ -114,31 +87,57 @@
 <body>
   <div class="main-container">
     <div class="content">
-      <div class="left-side">
-        <h1>Veb Chat</h1>
-        <p>Crie seu perfil para começar a conversar com seus amigos.</p>
-      </div>
-      <div class="right-side">
-        <h2>Criar Perfil</h2>
-        <form action="https://formsubmit.co/josefanykira@gmail.com" method="POST">
-          <input type="text" name="usuario" id="usuario" placeholder="Nome de usuário" readonly />
-          <input type="text" name="nome" id="nome" placeholder="Seu nome completo" readonly />
-          <input type="email" name="email" id="email" placeholder="Seu e-mail" readonly />
-          <input type="url" name="foto" placeholder="URL da sua foto de perfil" required />
-          <textarea name="experiencia" rows="4" placeholder="Escreva sua experiência..." required></textarea>
-          <input type="hidden" name="_subject" value="Novo perfil aguardando aprovação!">
-          <input type="hidden" name="_next" value="aguardando-aprovacao.html">
-          <button type="submit">Enviar Perfil</button>
-        </form>
-      </div>
+      <h2>Criar Perfil</h2>
+      <form id="perfilForm">
+        <input type="text" id="nome" placeholder="Nome completo" required />
+        <input type="text" id="usuario" placeholder="Nome de usuário" required />
+        <input type="email" id="email" placeholder="Seu e-mail" required />
+        <input type="file" id="foto" accept="image/*" required />
+        <textarea id="experiencia" placeholder="Escreva sua experiência ou apresentação..." required></textarea>
+        <button type="submit">Enviar Perfil</button>
+      </form>
     </div>
   </div>
 
   <script>
-    // Preenche os campos com dados salvos no login
-    document.getElementById('nome').value = sessionStorage.getItem('login_nome') || "";
-    document.getElementById('usuario').value = sessionStorage.getItem('login_usuario') || "";
-    document.getElementById('email').value = sessionStorage.getItem('login_email') || "";
+    document.getElementById('perfilForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const nome = document.getElementById('nome').value.trim();
+      const usuario = document.getElementById('usuario').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const experiencia = document.getElementById('experiencia').value.trim();
+      const fotoInput = document.getElementById('foto');
+      const file = fotoInput.files[0];
+
+      if (!nome || !usuario || !email || !experiencia || !file) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const fotoBase64 = reader.result;
+
+        const novoPerfil = {
+          nome,
+          usuario,
+          email,
+          experiencia,
+          foto: fotoBase64
+        };
+
+        let perfis = JSON.parse(localStorage.getItem('perfis_pendentes')) || [];
+        perfis.push(novoPerfil);
+        localStorage.setItem('perfis_pendentes', JSON.stringify(perfis));
+
+        localStorage.setItem('usuarioAtual', JSON.stringify(novoPerfil));
+
+        window.location.href = 'aguardando-aprovacao.html';
+      };
+
+      reader.readAsDataURL(file);
+    });
   </script>
 </body>
-  </html>
+                        </html>
