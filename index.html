@@ -1,123 +1,154 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Unificado</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Criar Perfil - Veb Chat</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    .container {
-      display: none;
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 1000px;
+      width: 100%;
       padding: 20px;
     }
-    .active {
-      display: block;
+
+    .content {
+      display: flex;
+      width: 100%;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      max-width: 900px;
+    }
+
+    .left-side {
+      flex: 1;
+      background-color: #1877f2;
+      color: white;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .left-side h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+
+    .left-side p {
+      font-size: 18px;
+    }
+
+    .right-side {
+      flex: 1;
+      padding: 40px;
+    }
+
+    .right-side h2 {
+      margin-bottom: 20px;
+      font-size: 26px;
+      color: #333;
+      text-align: center;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #1877f2;
+      border: none;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #155db8;
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        flex-direction: column;
+      }
+
+      .left-side, .right-side {
+        padding: 20px;
+      }
+
+      .left-side h1 {
+        font-size: 28px;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Login -->
-  <div class="container active" id="login">
-    <h2>Entrar</h2>
-    <input type="text" id="nome" placeholder="Nome completo" required>
-    <input type="text" id="usuario" placeholder="Nome de usuário" required>
-    <input type="email" id="email" placeholder="E-mail" required>
-    <button onclick="proximo('perfil')">Continuar</button>
-  </div>  <!-- Criar Perfil -->  <div class="container" id="perfil">
-    <h2>Criar Perfil</h2>
-    <input type="file" id="fotoPerfil">
-    <input type="text" id="experiencia" placeholder="Sua experiência">
-    <button onclick="enviarPerfil()">Enviar Perfil</button>
-  </div>  <!-- Área do Admin -->  <div class="container" id="admin">
-    <h2>Aprovar Perfis</h2>
-    <div id="pendentes"></div>
-  </div>  <!-- Chat Geral -->  <div class="container" id="chat">
-    <h2>Chat Geral</h2>
-    <div id="mensagens"></div>
-    <input type="text" id="mensagem" placeholder="Digite sua mensagem">
-    <button onclick="enviarMensagem()">Enviar</button>
-  </div>  <!-- Chat Privado -->  <div class="container" id="chatPrivado">
-    <h2>Chat Privado com <span id="destino"></span></h2>
-    <div id="mensagensPrivadas"></div>
-    <input type="text" id="mensagemPrivada" placeholder="Digite sua mensagem">
-    <button onclick="enviarMensagemPrivada()">Enviar</button>
-    <button onclick="voltarAoGeral()">Voltar ao Geral</button>
-  </div>  <script>
-    const usuarioAtual = {};
-    const perfisPendentes = [];
-    const perfisAprovados = [];
+  <div class="main-container">
+    <div class="content">
+      <div class="left-side">
+        <h1>Seu Perfil</h1>
+        <p>Adicione uma imagem e conte um pouco sobre sua experiência.</p>
+      </div>
+      <div class="right-side">
+        <h2>Montar Perfil</h2>
+        <form id="perfilForm">
+          <input type="file" id="foto" accept="image/*" required />
+          <input type="text" id="nomeCompleto" placeholder="Nome completo" required />
+          <textarea id="experiencia" placeholder="Conte sobre sua experiência..." rows="4" required></textarea>
+          <button type="submit">Enviar para aprovação</button>
+        </form>
+      </div>
+    </div>
+  </div>
 
-    function proximo(id) {
-      document.querySelectorAll('.container').forEach(div => div.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      usuarioAtual.nome = document.getElementById('nome').value;
-      usuarioAtual.usuario = document.getElementById('usuario').value;
-      usuarioAtual.email = document.getElementById('email').value;
+  <script>
+    document.getElementById('perfilForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const nome = document.getElementById('nomeCompleto').value.trim();
+      const experiencia = document.getElementById('experiencia').value.trim();
+      const foto = document.getElementById('foto').files[0];
 
-      if (usuarioAtual.usuario === 'admin') {
-        mostrarAdmin();
+      if (!nome || !experiencia || !foto) {
+        alert("Preencha todos os campos e envie uma imagem.");
+        return;
       }
-    }
 
-    function enviarPerfil() {
-      const experiencia = document.getElementById('experiencia').value;
-      perfisPendentes.push({ ...usuarioAtual, experiencia });
-      alert('Perfil enviado. Aguarde aprovação.');
-      document.getElementById('perfil').classList.remove('active');
-    }
+      sessionStorage.setItem('perfil_nome', nome);
+      sessionStorage.setItem('perfil_experiencia', experiencia);
+      sessionStorage.setItem('perfil_foto', URL.createObjectURL(foto));
 
-    function mostrarAdmin() {
-      const lista = document.getElementById('pendentes');
-      lista.innerHTML = '';
-      perfisPendentes.forEach((perfil, index) => {
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>${perfil.nome}</strong> (${perfil.usuario})<br>${perfil.experiencia}<br><button onclick="aprovar(${index})">Aprovar</button><hr>`;
-        lista.appendChild(div);
-      });
-      document.getElementById('admin').classList.add('active');
-    }
-
-    function aprovar(index) {
-      perfisAprovados.push(perfisPendentes[index]);
-      perfisPendentes.splice(index, 1);
-      mostrarAdmin();
-      alert('Usuário aprovado!');
-    }
-
-    function iniciarChat() {
-      document.querySelectorAll('.container').forEach(div => div.classList.remove('active'));
-      document.getElementById('chat').classList.add('active');
-    }
-
-    function enviarMensagem() {
-      const msg = document.getElementById('mensagem').value;
-      const div = document.createElement('div');
-      div.innerHTML = `<strong>${usuarioAtual.nome}:</strong> ${msg} <button onclick="abrirPrivado('${usuarioAtual.usuario}')">Conversar com</button>`;
-      document.getElementById('mensagens').appendChild(div);
-      document.getElementById('mensagem').value = '';
-    }
-
-    function abrirPrivado(usuario) {
-      document.getElementById('destino').textContent = usuario;
-      document.querySelectorAll('.container').forEach(div => div.classList.remove('active'));
-      document.getElementById('chatPrivado').classList.add('active');
-    }
-
-    function enviarMensagemPrivada() {
-      const msg = document.getElementById('mensagemPrivada').value;
-      const div = document.createElement('div');
-      div.innerHTML = `<strong>Você:</strong> ${msg}`;
-      document.getElementById('mensagensPrivadas').appendChild(div);
-      document.getElementById('mensagemPrivada').value = '';
-    }
-
-    function voltarAoGeral() {
-      document.querySelectorAll('.container').forEach(div => div.classList.remove('active'));
-      document.getElementById('chat').classList.add('active');
-    }
-  </script></body>
-</html>
+      window.location.href = "aguardando-aprovacao.html";
+    });
+  </script>
+</body>
+  </html>
