@@ -99,45 +99,69 @@
     </div>
   </div>
 
-  <script>
-    document.getElementById('perfilForm').addEventListener('submit', function(e) {
-      e.preventDefault();
+<script>
+  document.getElementById('perfilForm').addEventListener('submit', function(e) {
+    e.preventDefault();
 
-      const nome = document.getElementById('nome').value.trim();
-      const usuario = document.getElementById('usuario').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const experiencia = document.getElementById('experiencia').value.trim();
-      const fotoInput = document.getElementById('foto');
-      const file = fotoInput.files[0];
+    const nome = document.getElementById('nome').value.trim();
+    const usuario = document.getElementById('usuario').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const experiencia = document.getElementById('experiencia').value.trim();
+    const fotoInput = document.getElementById('foto');
+    const file = fotoInput.files[0];
 
-      if (!nome || !usuario || !email || !experiencia || !file) {
-        alert("Preencha todos os campos.");
-        return;
-      }
+    if (!nome || !usuario || !email || !experiencia || !file) {
+      alert("Preencha todos os campos.");
+      return;
+    }
 
-      const reader = new FileReader();
-      reader.onload = function () {
-        const fotoBase64 = reader.result;
+    const reader = new FileReader();
+    reader.onload = function () {
+      const fotoBase64 = reader.result;
 
-        const novoPerfil = {
-          nome,
-          usuario,
-          email,
-          experiencia,
-          foto: fotoBase64
-        };
-
-        let perfis = JSON.parse(localStorage.getItem('perfis_pendentes')) || [];
-        perfis.push(novoPerfil);
-        localStorage.setItem('perfis_pendentes', JSON.stringify(perfis));
-
-        localStorage.setItem('usuarioAtual', JSON.stringify(novoPerfil));
-
-        window.location.href = 'aguardando-aprovacao.html';
+      const novoPerfil = {
+        nome,
+        usuario,
+        email,
+        experiencia,
+        foto: fotoBase64
       };
 
-      reader.readAsDataURL(file);
-    });
+      // Salvar no localStorage
+      let perfis = JSON.parse(localStorage.getItem('perfis_pendentes')) || [];
+      perfis.push(novoPerfil);
+      localStorage.setItem('perfis_pendentes', JSON.stringify(perfis));
+      localStorage.setItem('usuarioAtual', JSON.stringify(novoPerfil));
+
+      // Enviar para o FormSubmit
+      fetch("https://formsubmit.co/ajax/josefanykira@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          Nome: nome,
+          Usuario: usuario,
+          Email: email,
+          Experiencia: experiencia
+        })
+      })
+      .then(response => {
+        if (response.ok) {
+          window.location.href = 'aguardando-aprovacao.html';
+        } else {
+          alert("Erro ao enviar email de aprovação.");
+        }
+      })
+      .catch(error => {
+        console.error("Erro:", error);
+        alert("Erro de rede ao tentar enviar.");
+      });
+    };
+
+    reader.readAsDataURL(file);
+  });
   </script>
 </body>
 </html>
