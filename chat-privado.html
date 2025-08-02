@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Conversa Privada - Veb Chat</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .chat-container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 900px;
+      width: 100%;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .message img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .message-content {
+      background-color: #e4e6eb;
+      padding: 10px 15px;
+      border-radius: 10px;
+      max-width: 70%;
+    }
+
+    .message-content p {
+      margin: 0;
+    }
+
+    .form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .form input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .form button {
+      padding: 12px 20px;
+      background-color: #1877f2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .form button:hover {
+      background-color: #155db8;
+    }
+
+    .header {
+      font-size: 22px;
+      font-weight: bold;
+      color: #1877f2;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="header" id="tituloChat">Conversa Privada</div>
+    <div class="messages" id="messages"></div>
+    <form class="form" id="chatForm">
+      <input type="text" id="mensagem" placeholder="Digite sua mensagem privada..." required />
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <script>
+    const usuario = JSON.parse(localStorage.getItem('usuarioAtual')) || {};
+    const destinatario = new URLSearchParams(window.location.search).get('usuario') || 'Amigo';
+    const idChatPrivado = `chat_privado_${usuario.nome}_com_${destinatario}`;
+    const mensagens = JSON.parse(localStorage.getItem(idChatPrivado)) || [];
+    const messagesDiv = document.getElementById('messages');
+    document.getElementById('tituloChat').textContent = `Conversa com ${destinatario}`;
+
+    function renderizarMensagens() {
+      messagesDiv.innerHTML = '';
+      mensagens.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'message';
+        div.innerHTML = `
+          <img src="${msg.foto}" />
+          <div class="message-content">
+            <strong>${msg.nome}</strong>
+            <p>${msg.texto}</p>
+          </div>
+        `;
+        messagesDiv.appendChild(div);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    document.getElementById('chatForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const texto = document.getElementById('mensagem').value.trim();
+      if (!texto) return;
+
+      mensagens.push({
+        nome: usuario.nome,
+        foto: usuario.foto,
+        texto: texto
+      });
+
+      localStorage.setItem(idChatPrivado, JSON.stringify(mensagens));
+      document.getElementById('mensagem').value = '';
+      renderizarMensagens();
+    });
+
+    renderizarMensagens();
+  </script>
+</body>
+  </html>
