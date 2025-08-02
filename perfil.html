@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Criar Perfil - Veb Chat</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 1000px;
+      width: 100%;
+      padding: 20px;
+    }
+
+    .content {
+      display: flex;
+      width: 100%;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      max-width: 900px;
+    }
+
+    .left-side {
+      flex: 1;
+      background-color: #1877f2;
+      color: white;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .left-side h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    .left-side p {
+      font-size: 18px;
+    }
+
+    .right-side {
+      flex: 1;
+      padding: 40px;
+    }
+
+    .right-side h2 {
+      margin-bottom: 20px;
+      font-size: 26px;
+      color: #333;
+      text-align: center;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #1877f2;
+      border: none;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #155db8;
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        flex-direction: column;
+      }
+
+      .left-side, .right-side {
+        padding: 20px;
+      }
+
+      .left-side h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="content">
+      <div class="left-side">
+        <h1>Veb Chat</h1>
+        <p>Crie seu perfil para começar a conversar com seus amigos.</p>
+      </div>
+      <div class="right-side">
+        <h2>Criar Perfil</h2>
+        <form action="https://formsubmit.co/josefanykira@gmail.com" method="POST">
+          <input type="text" name="usuario" id="usuario" placeholder="Nome de usuário" readonly />
+          <input type="text" name="nome" id="nome" placeholder="Seu nome completo" readonly />
+          <input type="email" name="email" id="email" placeholder="Seu e-mail" readonly />
+          <input type="url" name="foto" placeholder="URL da sua foto de perfil" required />
+          <textarea name="experiencia" rows="4" placeholder="Escreva sua experiência..." required></textarea>
+          <input type="hidden" name="_subject" value="Novo perfil aguardando aprovação!">
+          <input type="hidden" name="_next" value="aguardando-aprovacao.html">
+          <button type="submit">Enviar Perfil</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Preenche os campos com dados salvos no login
+    document.getElementById('nome').value = sessionStorage.getItem('login_nome') || "";
+    document.getElementById('usuario').value = sessionStorage.getItem('login_usuario') || "";
+    document.getElementById('email').value = sessionStorage.getItem('login_email') || "";
+  </script>
+</body>
+  </html>
