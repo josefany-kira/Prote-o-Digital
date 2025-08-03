@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Entrar - Vibe Chat</title>
+  <title>Cadastrar - Vibe Chat</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -92,16 +92,19 @@
         <p>Conecte-se com amigos e converse sobre tudo num único lugar.</p>
       </div>
       <div class="right-side">
-        <h2>Iniciar Sessão</h2>
-        <form id="loginForm">
+        <h2>Criar Conta</h2>
+        <form id="cadastroForm">
+          <input type="text" id="nome" placeholder="Nome completo" required />
           <input type="text" id="usuario" placeholder="Nome de usuário" required />
+          <input type="email" id="email" placeholder="E-mail" required />
           <input type="password" id="senha" placeholder="Senha" required />
-          <button type="submit">Entrar</button>
+          <button type="submit">Cadastrar</button>
         </form>
       </div>
     </div>
   </div>
 
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
 
@@ -119,30 +122,29 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
+    document.getElementById('cadastroForm').addEventListener('submit', function(e) {
       e.preventDefault();
 
+      const nome = document.getElementById('nome').value.trim();
       const usuario = document.getElementById('usuario').value.trim();
+      const email = document.getElementById('email').value.trim();
       const senha = document.getElementById('senha').value.trim();
 
-      db.ref('perfisAprovados/' + usuario).get()
-        .then(snapshot => {
-          if (!snapshot.exists()) {
-            alert("Usuário não encontrado ou não aprovado.");
-            return;
-          }
+      if (!nome || !usuario || !email || !senha) {
+        alert("Preencha todos os campos.");
+        return;
+      }
 
-          const dados = snapshot.val();
-          if (dados.senha === senha) {
-            window.location.href = `chat.html?usuario=${encodeURIComponent(usuario)}`;
-          } else {
-            alert("Senha incorreta.");
-          }
-        })
-        .catch(error => {
-          alert("Erro: " + error.message);
-        });
+      db.ref('usuarios/' + usuario).set({
+        nome, usuario, email, senha,
+        aprovado: false
+      }).then(() => {
+        alert("Cadastro enviado. Aguarde aprovação do administrador.");
+        window.location.href = 'aguardando-aprovacao.html';
+      }).catch(error => {
+        alert("Erro ao cadastrar: " + error.message);
+      });
     });
   </script>
 </body>
-</html>
+            </html>
