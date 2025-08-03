@@ -3,14 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat Geral - Veb Chat</title>
+  <title>Chat Geral - Vibe Chat</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    /* Estilos mantidos como antes */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f0f2f5;
@@ -19,7 +15,6 @@
       align-items: center;
       height: 100vh;
     }
-
     .chat-container {
       background: white;
       border-radius: 10px;
@@ -31,20 +26,17 @@
       flex-direction: column;
       padding: 20px;
     }
-
     .messages {
       flex: 1;
       overflow-y: auto;
       padding-right: 10px;
       margin-bottom: 10px;
     }
-
     .message {
       display: flex;
       align-items: flex-start;
       margin-bottom: 15px;
     }
-
     .message img {
       width: 50px;
       height: 50px;
@@ -52,23 +44,17 @@
       margin-right: 10px;
       cursor: pointer;
     }
-
     .message-content {
       background-color: #e4e6eb;
       padding: 10px 15px;
       border-radius: 10px;
       max-width: 70%;
     }
-
-    .message-content p {
-      margin: 0;
-    }
-
+    .message-content p { margin: 0; }
     .form {
       display: flex;
       gap: 10px;
     }
-
     .form input[type="text"] {
       flex: 1;
       padding: 12px;
@@ -76,7 +62,6 @@
       border-radius: 6px;
       font-size: 16px;
     }
-
     .form button {
       padding: 12px 20px;
       background-color: #1877f2;
@@ -86,11 +71,9 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     .form button:hover {
       background-color: #155db8;
     }
-
     .header {
       font-size: 22px;
       font-weight: bold;
@@ -102,7 +85,7 @@
 </head>
 <body>
   <div class="chat-container">
-    <div class="header">Chat Geral</div>
+    <div class="header" id="bemVindo">Chat Geral</div>
     <div class="messages" id="messages"></div>
     <form class="form" id="chatForm">
       <input type="text" id="mensagem" placeholder="Digite sua mensagem..." required />
@@ -110,73 +93,98 @@
     </form>
   </div>
 
-  <script>
-    const mensagens = JSON.parse(localStorage.getItem('mensagensChat')) || [];
-    const usuario = JSON.parse(localStorage.getItem('usuarioAtual')) || {};
-    const messagesDiv = document.getElementById('messages');
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
 
-    function renderizarMensagens() {
-      messagesDiv.innerHTML = '';
-      mensagens.forEach(msg => {
-        const div = document.createElement('div');
-        div.className = 'message';
-        div.innerHTML = `
-          <img src="${msg.foto}" title="Conversar com ${msg.nome}" onclick="iniciarConversaPrivada('${msg.nome}')"/>
-          <div class="message-content">
-            <strong>${msg.nome}</strong>
-            <p>${msg.texto}</p>
-          </div>
-        `;
-        messagesDiv.appendChild(div);
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHGSrN1FM91XYzEonqq827aMGGw0yEtWI",
+      authDomain: "vibe-chat-b1e67.firebaseapp.com",
+      databaseURL: "https://vibe-chat-b1e67-default-rtdb.firebaseio.com",
+      projectId: "vibe-chat-b1e67",
+      storageBucket: "vibe-chat-b1e67.appspot.com",
+      messagingSenderId: "161333976914",
+      appId: "1:161333976914:web:093413f938f7279468248b"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const params = new URLSearchParams(window.location.search);
+    const usuarioNome = params.get('usuario');
+
+    if (!usuarioNome) {
+      window.location.href = "perfil.html";
+    }
+
+    let usuarioAtual = null;
+
+    // Carrega o perfil do usuário
+    firebase.database().ref('usuarios/' + usuarioNome).once('value')
+      .then(snapshot => {
+        const usuario = snapshot.val();
+        if (!usuario) {
+          alert("Usuário não encontrado.");
+          window.location.href = "perfil.html";
+        } else if (!usuario.aprovado) {
+          alert("Seu perfil ainda não foi aprovado.");
+          window.location.href = "perfil.html";
+        } else {
+          usuarioAtual = usuario;
+          document.getElementById('bemVindo').innerText = "Bem-vindo, " + usuario.nome + "!";
+          carregarMensagens();
+        }
+      })
+      .catch(error => {
+        alert("Erro ao buscar dados do Firebase.");
+        console.error(error);
+        window.location.href = "perfil.html";
       });
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    // Carrega e renderiza mensagens do Firebase
+    function carregarMensagens() {
+      db.ref("mensagens").on("value", snapshot => {
+        const mensagens = snapshot.val() || {};
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = '';
+
+        Object.values(mensagens).forEach(msg => {
+          const div = document.createElement('div');
+          div.className = 'message';
+          div.innerHTML = `
+            <img src="${msg.foto}" title="Conversar com ${msg.nome}" onclick="iniciarConversaPrivada('${msg.nome}')"/>
+            <div class="message-content">
+              <strong>${msg.nome}</strong>
+              <p>${msg.texto}</p>
+            </div>
+          `;
+          messagesDiv.appendChild(div);
+        });
+
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      });
     }
 
     function iniciarConversaPrivada(nome) {
-      alert(`Iniciar conversa privada com ${nome} (recurso em desenvolvimento).`);
-      // Aqui você pode redirecionar futuramente: window.location.href = `chat-privado.html?usuario=${nome}`;
+      alert(`Iniciar conversa privada com ${nome} (em breve).`);
     }
-  // Recupera o nome de usuário da URL
-  const params = new URLSearchParams(window.location.search);
-  const usuarioNome = params.get('usuario');
 
-  if (!usuarioNome) {
-    // Se não tiver nome, volta para o início
-    window.location.href = "perfil.html";
-  }
+    document.getElementById('chatForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const texto = document.getElementById('mensagem').value.trim();
+      if (!texto || !usuarioAtual) return;
 
-  // Recupera o perfil completo do localStorage
-  const usuariosAprovados = JSON.parse(localStorage.getItem('usuarios_aprovados')) || [];
-  const usuario = usuariosAprovados.find(u => u.usuario === usuarioNome);
+      const novaMensagem = {
+        nome: usuarioAtual.nome,
+        foto: usuarioAtual.foto,
+        texto: texto,
+        timestamp: Date.now()
+      };
 
-  if (!usuario) {
-    alert("Usuário não encontrado.");
-    window.location.href = "perfil.html";
-  }
-
-  // Saudar o usuário no chat
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('bemVindo').innerText = "Bem-vindo, " + usuario.nome + "!";
-  });
-
-  // Parte de envio da mensagem
-  document.getElementById('chatForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const texto = document.getElementById('mensagem').value.trim();
-    if (!texto) return;
-
-    mensagens.push({
-      nome: usuario.nome,
-      foto: usuario.foto,
-      texto: texto
+      db.ref("mensagens").push(novaMensagem);
+      document.getElementById('mensagem').value = '';
     });
-
-    localStorage.setItem('mensagensChat', JSON.stringify(mensagens));
-    document.getElementById('mensagem').value = '';
-    renderizarMensagens();
-  });
-
-  renderizarMensagens();
-</script>
+  </script>
 </body>
 </html>
