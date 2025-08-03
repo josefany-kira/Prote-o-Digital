@@ -136,24 +136,47 @@
       alert(`Iniciar conversa privada com ${nome} (recurso em desenvolvimento).`);
       // Aqui você pode redirecionar futuramente: window.location.href = `chat-privado.html?usuario=${nome}`;
     }
+  // Recupera o nome de usuário da URL
+  const params = new URLSearchParams(window.location.search);
+  const usuarioNome = params.get('usuario');
 
-    document.getElementById('chatForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const texto = document.getElementById('mensagem').value.trim();
-      if (!texto) return;
+  if (!usuarioNome) {
+    // Se não tiver nome, volta para o início
+    window.location.href = "perfil.html";
+  }
 
-      mensagens.push({
-        nome: usuario.nome,
-        foto: usuario.foto,
-        texto: texto
-      });
+  // Recupera o perfil completo do localStorage
+  const usuariosAprovados = JSON.parse(localStorage.getItem('usuarios_aprovados')) || [];
+  const usuario = usuariosAprovados.find(u => u.usuario === usuarioNome);
 
-      localStorage.setItem('mensagensChat', JSON.stringify(mensagens));
-      document.getElementById('mensagem').value = '';
-      renderizarMensagens();
+  if (!usuario) {
+    alert("Usuário não encontrado.");
+    window.location.href = "perfil.html";
+  }
+
+  // Saudar o usuário no chat
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('bemVindo').innerText = "Bem-vindo, " + usuario.nome + "!";
+  });
+
+  // Parte de envio da mensagem
+  document.getElementById('chatForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const texto = document.getElementById('mensagem').value.trim();
+    if (!texto) return;
+
+    mensagens.push({
+      nome: usuario.nome,
+      foto: usuario.foto,
+      texto: texto
     });
 
+    localStorage.setItem('mensagensChat', JSON.stringify(mensagens));
+    document.getElementById('mensagem').value = '';
     renderizarMensagens();
-  </script>
+  });
+
+  renderizarMensagens();
+</script>
 </body>
-  </html>
+</html>
