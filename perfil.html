@@ -3,14 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Criar Perfil - Vibe Chat</title>
+  <title>Perfil - Vibe Chat</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f0f2f5;
@@ -18,85 +12,54 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      margin: 0;
     }
 
-    .main-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      max-width: 1000px;
-      width: 100%;
-      padding: 20px;
-    }
-
-    .content {
-      width: 100%;
+    .profile-container {
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
       max-width: 500px;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      font-size: 26px;
-      color: #333;
       text-align: center;
     }
 
-    input, textarea {
-      width: 100%;
-      padding: 12px;
+    h1 {
+      color: #1877f2;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 18px;
       margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 16px;
     }
 
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #1877f2;
-      border: none;
-      color: white;
-      font-size: 16px;
+    .status {
+      margin-top: 20px;
+      padding: 10px;
       font-weight: bold;
       border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
     }
 
-    button:hover {
-      background-color: #155db8;
+    .aprovado {
+      color: #155724;
+      background-color: #d4edda;
     }
 
-    label {
-      font-weight: bold;
-      margin-top: 10px;
-      display: block;
-    }
-
-    @media (max-width: 600px) {
-      .content {
-        padding: 20px;
-      }
+    .pendente {
+      color: #856404;
+      background-color: #fff3cd;
     }
   </style>
 </head>
 <body>
-  <div class="main-container">
-    <div class="content">
-      <h2>Criar Perfil</h2>
-      <form id="perfilForm">
-        <input type="text" id="nome" placeholder="Nome completo" required />
-        <input type="text" id="usuario" placeholder="Nome de usuário" required />
-        <input type="email" id="email" placeholder="Seu e-mail" required />
-        <input type="file" id="foto" accept="image/*" required />
-        <textarea id="experiencia" placeholder="Escreva sua experiência ou apresentação..." required></textarea>
-        <button type="submit">Enviar Perfil</button>
-      </form>
-    </div>
+  <div class="profile-container">
+    <h1>Perfil do Usuário</h1>
+    <p><strong>Nome:</strong> <span id="nome">Carregando...</span></p>
+    <p><strong>Usuário:</strong> <span id="usuario">Carregando...</span></p>
+    <p><strong>Email:</strong> <span id="email">Carregando...</span></p>
+    <div id="status" class="status">Verificando status...</div>
   </div>
 
   <!-- Firebase SDK -->
@@ -115,89 +78,41 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    const db = firebase.database();
 
-    // Função para capturar parâmetro da URL
-    function getParametroURL(nome) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(nome);
+    function getParam(param) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(param);
     }
 
-    const id = getParametroURL("id");
+    const usuario = getParam("usuario");
 
-    // Se tiver ID na URL, buscamos os dados existentes
-    if (id) {
-      database.ref("usuarios/" + id).once("value").then(snapshot => {
-        const dados = snapshot.val();
-        if (dados) {
-          document.getElementById("nome").value = dados.nome || "";
-          document.getElementById("email").value = dados.email || "";
+    if (usuario) {
+      db.ref("usuarios/" + usuario).once("value").then(snapshot => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          document.getElementById("nome").textContent = data.nome;
+          document.getElementById("usuario").textContent = data.usuario;
+          document.getElementById("email").textContent = data.email;
+
+          const statusDiv = document.getElementById("status");
+          if (data.aprovado) {
+            statusDiv.textContent = "✅ Conta aprovada";
+            statusDiv.classList.add("aprovado");
+          } else {
+            statusDiv.textContent = "⏳ Aguardando aprovação do administrador";
+            statusDiv.classList.add("pendente");
+          }
         } else {
           alert("Usuário não encontrado.");
         }
       }).catch(error => {
         console.error("Erro ao buscar dados:", error);
+        alert("Erro ao carregar perfil.");
       });
+    } else {
+      alert("Parâmetro 'usuario' ausente na URL.");
     }
-
-    const form = document.getElementById('perfilForm');
-
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const nome = document.getElementById('nome').value.trim();
-      const usuario = document.getElementById('usuario').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const experiencia = document.getElementById('experiencia').value.trim();
-      const fotoInput = document.getElementById('foto');
-      const file = fotoInput.files[0];
-
-      if (!nome || !usuario || !email || !experiencia || !file) {
-        alert("Preencha todos os campos.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function () {
-        const fotoBase64 = reader.result;
-
-        const perfil = {
-          nome,
-          usuario,
-          email,
-          experiencia,
-          foto: fotoBase64,
-          aprovado: false
-        };
-
-        // Salvar no Firebase usando o ID
-        firebase.database().ref('usuarios/' + id).update(perfil)
-        .then(() => {
-          // Enviar email para aprovação
-          fetch("https://formsubmit.co/ajax/josefanykira@gmail.com", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json"
-            },
-            body: JSON.stringify({
-              Nome: nome,
-              Usuario: usuario,
-              Email: email,
-              Experiencia: experiencia
-            })
-          });
-
-          alert("Perfil enviado com sucesso! Aguarde aprovação.");
-          window.location.href = `chat.html?usuario=${encodeURIComponent(usuario)}`;
-        })
-        .catch(error => {
-          alert("Erro ao salvar no Firebase: " + error.message);
-        });
-      };
-
-      reader.readAsDataURL(file);
-    });
   </script>
 </body>
-  </html>
+</html>
