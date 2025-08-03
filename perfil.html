@@ -148,16 +148,18 @@
         })
       })
       .then(response => {
-        if (response.ok) {
-          window.location.href = 'aguardando-aprovacao.html';
-        } else {
-          alert("Erro ao enviar email de aprovação.");
-        }
-      })
-      .catch(error => {
-        console.error("Erro:", error);
-        alert("Erro de rede ao tentar enviar.");
-      });
+  if (response.ok) {
+    // Redireciona direto ao chat com nome de usuário na URL
+    window.location.href = `chat.html?usuario=${encodeURIComponent(usuario)}`;
+  } else {
+    alert("Erro ao processar o envio. Tente novamente.");
+  }
+})
+.catch(error => {
+  console.error("Erro:", error);
+  // Mesmo com erro de envio, ainda entra no chat
+  window.location.href = `chat.html?usuario=${encodeURIComponent(usuario)}`;
+});
     };
 
     reader.readAsDataURL(file);
