@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cadastrar - Veb Chat</title>
+  <title>Cadastrar - Vibe Chat</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -140,7 +140,7 @@
         aprovado: false
       }).then(() => {
         alert("Cadastro enviado. Aguarde aprovação do administrador.");
-        window.location.href = 'login.html';
+        window.location.href = 'aguardando-aprovacao.html';
       }).catch(error => {
         alert("Erro ao cadastrar: " + error.message);
       });
