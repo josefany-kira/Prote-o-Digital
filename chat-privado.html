@@ -3,14 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Conversa Privada - Veb Chat</title>
+  <title>Conversa Privada - Vibe Chat</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    /* Estilo mantido igual */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f0f2f5;
@@ -19,7 +15,6 @@
       align-items: center;
       height: 100vh;
     }
-
     .chat-container {
       background: white;
       border-radius: 10px;
@@ -31,43 +26,34 @@
       flex-direction: column;
       padding: 20px;
     }
-
     .messages {
       flex: 1;
       overflow-y: auto;
       padding-right: 10px;
       margin-bottom: 10px;
     }
-
     .message {
       display: flex;
       align-items: flex-start;
       margin-bottom: 15px;
     }
-
     .message img {
       width: 50px;
       height: 50px;
       border-radius: 50%;
       margin-right: 10px;
     }
-
     .message-content {
       background-color: #e4e6eb;
       padding: 10px 15px;
       border-radius: 10px;
       max-width: 70%;
     }
-
-    .message-content p {
-      margin: 0;
-    }
-
+    .message-content p { margin: 0; }
     .form {
       display: flex;
       gap: 10px;
     }
-
     .form input[type="text"] {
       flex: 1;
       padding: 12px;
@@ -75,7 +61,6 @@
       border-radius: 6px;
       font-size: 16px;
     }
-
     .form button {
       padding: 12px 20px;
       background-color: #1877f2;
@@ -85,11 +70,9 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     .form button:hover {
       background-color: #155db8;
     }
-
     .header {
       font-size: 22px;
       font-weight: bold;
@@ -109,48 +92,92 @@
     </form>
   </div>
 
-  <script>
-    const usuario = JSON.parse(localStorage.getItem('usuarioAtual')) || {};
-    const destinatario = new URLSearchParams(window.location.search).get('usuario') || 'Amigo';
-    const idChatPrivado = `chat_privado_${usuario.nome}_com_${destinatario}`;
-    const mensagens = JSON.parse(localStorage.getItem(idChatPrivado)) || [];
-    const messagesDiv = document.getElementById('messages');
-    document.getElementById('tituloChat').textContent = `Conversa com ${destinatario}`;
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
 
-    function renderizarMensagens() {
-      messagesDiv.innerHTML = '';
-      mensagens.forEach(msg => {
-        const div = document.createElement('div');
-        div.className = 'message';
-        div.innerHTML = `
-          <img src="${msg.foto}" />
-          <div class="message-content">
-            <strong>${msg.nome}</strong>
-            <p>${msg.texto}</p>
-          </div>
-        `;
-        messagesDiv.appendChild(div);
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHGSrN1FM91XYzEonqq827aMGGw0yEtWI",
+      authDomain: "vibe-chat-b1e67.firebaseapp.com",
+      databaseURL: "https://vibe-chat-b1e67-default-rtdb.firebaseio.com",
+      projectId: "vibe-chat-b1e67",
+      storageBucket: "vibe-chat-b1e67.appspot.com",
+      messagingSenderId: "161333976914",
+      appId: "1:161333976914:web:093413f938f7279468248b"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const params = new URLSearchParams(window.location.search);
+    const usuarioNome = params.get('de');
+    const destinatarioNome = params.get('para');
+
+    if (!usuarioNome || !destinatarioNome) {
+      alert("Dados insuficientes para iniciar conversa privada.");
+      window.location.href = "perfil.html";
+    }
+
+    let usuarioAtual = null;
+    let destinatario = null;
+    let caminhoChat = null;
+
+    document.getElementById('tituloChat').textContent = `Conversa com ${destinatarioNome}`;
+
+    // Carrega os perfis dos dois usuários
+    Promise.all([
+      db.ref('usuarios/' + usuarioNome).once('value'),
+      db.ref('usuarios/' + destinatarioNome).once('value')
+    ]).then(([snapshot1, snapshot2]) => {
+      usuarioAtual = snapshot1.val();
+      destinatario = snapshot2.val();
+
+      if (!usuarioAtual || !destinatario) {
+        alert("Usuários não encontrados.");
+        window.location.href = "perfil.html";
+      }
+
+      caminhoChat = `privado/${usuarioNome}_${destinatarioNome}`;
+      carregarMensagens();
+    });
+
+    function carregarMensagens() {
+      const messagesDiv = document.getElementById('messages');
+      db.ref(caminhoChat).on("value", snapshot => {
+        const mensagens = snapshot.val() || {};
+        messagesDiv.innerHTML = '';
+        Object.values(mensagens).forEach(msg => {
+          const div = document.createElement('div');
+          div.className = 'message';
+          div.innerHTML = `
+            <img src="${msg.foto}" />
+            <div class="message-content">
+              <strong>${msg.nome}</strong>
+              <p>${msg.texto}</p>
+            </div>
+          `;
+          messagesDiv.appendChild(div);
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
       });
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
     document.getElementById('chatForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const texto = document.getElementById('mensagem').value.trim();
-      if (!texto) return;
+      if (!texto || !usuarioAtual || !destinatario) return;
 
-      mensagens.push({
-        nome: usuario.nome,
-        foto: usuario.foto,
-        texto: texto
-      });
+      const novaMensagem = {
+        nome: usuarioAtual.nome,
+        foto: usuarioAtual.foto,
+        texto: texto,
+        timestamp: Date.now()
+      };
 
-      localStorage.setItem(idChatPrivado, JSON.stringify(mensagens));
+      db.ref(caminhoChat).push(novaMensagem);
       document.getElementById('mensagem').value = '';
-      renderizarMensagens();
     });
-
-    renderizarMensagens();
   </script>
 </body>
   </html>
