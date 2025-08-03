@@ -88,7 +88,7 @@
   <div class="main-container">
     <div class="content">
       <div class="left-side">
-        <h1>Veb Chat</h1>
+        <h1>Vibe Chat</h1>
         <p>Conecte-se com amigos e converse sobre tudo num único lugar.</p>
       </div>
       <div class="right-side">
@@ -136,18 +136,15 @@
       }
 
       db.ref('usuarios/' + usuario).set({
-        nome,
-        usuario,
-        email,
-        senha,
+        nome, usuario, email, senha,
         aprovado: false
       }).then(() => {
-        alert("Cadastro enviado com sucesso! Aguarde a aprovação do administrador.");
-        window.location.href = `perfil.html?usuario=${encodeURIComponent(usuario)}`;
+        alert("Cadastro enviado. Aguarde aprovação do administrador.");
+        window.location.href = "perfil.html?usuario=" + encodeURIComponent(usuario);
       }).catch(error => {
         alert("Erro ao cadastrar: " + error.message);
       });
     });
   </script>
 </body>
-  </html>
+</html>
