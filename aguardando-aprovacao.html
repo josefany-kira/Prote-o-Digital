@@ -5,12 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Aguardando Aprovação - Veb Chat</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f0f2f5;
@@ -19,7 +14,6 @@
       align-items: center;
       min-height: 100vh;
     }
-
     .main-container {
       display: flex;
       flex-direction: column;
@@ -28,7 +22,6 @@
       width: 100%;
       padding: 20px;
     }
-
     .content {
       display: flex;
       width: 100%;
@@ -41,19 +34,16 @@
       flex-direction: column;
       padding: 40px;
     }
-
     h1 {
       color: #1877f2;
       margin-bottom: 20px;
       font-size: 28px;
     }
-
     p {
       font-size: 18px;
       color: #444;
       margin-bottom: 10px;
     }
-
     .loader {
       margin-top: 30px;
       border: 6px solid #f3f3f3;
@@ -63,7 +53,6 @@
       height: 40px;
       animation: spin 1s linear infinite;
     }
-
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -79,5 +68,44 @@
       <div class="loader"></div>
     </div>
   </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHGSrN1FM91XYzEonqq827aMGGw0yEtWI",
+      authDomain: "vibe-chat-b1e67.firebaseapp.com",
+      databaseURL: "https://vibe-chat-b1e67-default-rtdb.firebaseio.com",
+      projectId: "vibe-chat-b1e67",
+      storageBucket: "vibe-chat-b1e67.appspot.com",
+      messagingSenderId: "161333976914",
+      appId: "1:161333976914:web:093413f938f7279468248b"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const usuario = JSON.parse(localStorage.getItem('usuarioTemp'));
+    if (!usuario || !usuario.nome) {
+      alert("Informações do usuário não encontradas.");
+      window.location.href = "login.html";
+    }
+
+    const nome = usuario.nome;
+
+    // Verifica se o perfil foi aprovado
+    db.ref('usuarios_aprovados/' + nome).on("value", snapshot => {
+      if (snapshot.exists()) {
+        // Mover usuário aprovado para localStorage permanente
+        localStorage.setItem('usuarioAtual', JSON.stringify(snapshot.val()));
+        localStorage.removeItem('usuarioTemp');
+
+        // Redireciona para o perfil
+        window.location.href = "perfil.html";
+      }
+    });
+  </script>
 </body>
 </html>
