@@ -3,178 +3,74 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Entrar - Vibe Chat</title>
+  <title>Veb Chat</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f2f5;
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      height: 100vh;
+      margin: 0;
     }
 
-    .main-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      max-width: 1000px;
-      width: 100%;
-      padding: 20px;
-    }
-
-    .content {
-      display: flex;
-      width: 100%;
+    .container {
       background: white;
+      padding: 40px;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      overflow: hidden;
-      max-width: 900px;
-    }
-
-    .left-side {
-      flex: 1;
-      background-color: #1877f2;
-      color: white;
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .left-side h1 {
-      font-size: 36px;
-      margin-bottom: 20px;
-    }
-
-    .left-side p {
-      font-size: 18px;
-    }
-
-    .right-side {
-      flex: 1;
-      padding: 40px;
-    }
-
-    .right-side h2 {
-      margin-bottom: 20px;
-      font-size: 26px;
-      color: #333;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
       text-align: center;
+      max-width: 400px;
+      width: 100%;
     }
 
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 6px;
+    h1 {
+      color: #1877f2;
+      margin-bottom: 10px;
+    }
+
+    p {
       font-size: 16px;
+      color: #555;
+      margin-bottom: 30px;
     }
 
-    button {
-      width: 100%;
-      padding: 12px;
+    .button {
       background-color: #1877f2;
-      border: none;
       color: white;
-      font-size: 16px;
-      font-weight: bold;
+      border: none;
+      padding: 14px 20px;
       border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
-      margin-top: 10px;
+      width: 100%;
+      margin-bottom: 15px;
     }
 
-    button:hover {
+    .button:hover {
       background-color: #155db8;
     }
 
-    @media (max-width: 768px) {
-      .content {
-        flex-direction: column;
-      }
+    .button.secondary {
+      background-color: #6c757d;
+    }
 
-      .left-side, .right-side {
-        padding: 20px;
-      }
-
-      .left-side h1 {
-        font-size: 28px;
-      }
+    .button.secondary:hover {
+      background-color: #5a6268;
     }
   </style>
 </head>
 <body>
-  <div class="main-container">
-    <div class="content">
-      <div class="left-side">
-        <h1>Veb Chat</h1>
-        <p>Conecte-se com amigos e converse sobre tudo num único lugar.</p>
-      </div>
-      <div class="right-side">
-        <h2>Entrar no Chat</h2>
-        <form id="loginForm">
-          <input type="text" id="nome" placeholder="Seu nome completo" required />
-          <input type="text" id="usuario" placeholder="Nome de usuário" required />
-          <input type="email" id="email" placeholder="Seu e-mail" required />
-          <button type="submit">Continuar</button>
-        </form>
-      </div>
-    </div>
+  <div class="container">
+    <h1>Veb Chat</h1>
+    <p>Conecte-se com amigos e converse sobre tudo num único lugar.</p>
+
+    <!-- Botão para criar conta -->
+    <button class="button" onclick="window.location.href='cadastro.html'">Criar Conta</button>
+
+    <!-- Botão para quem já tem conta -->
+    <button class="button secondary" onclick="window.location.href='login.html'">Iniciar Sessão</button>
   </div>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
-
-  <script>
-    // Configuração do Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyAHGSrN1FM91XYzEonqq827aMGGw0yEtWI",
-      authDomain: "vibe-chat-b1e67.firebaseapp.com",
-      databaseURL: "https://vibe-chat-b1e67-default-rtdb.firebaseio.com",
-      projectId: "vibe-chat-b1e67",
-      storageBucket: "vibe-chat-b1e67.appspot.com",
-      messagingSenderId: "161333976914",
-      appId: "1:161333976914:web:093413f938f7279468248b"
-    };
-
-    // Inicializa o Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const nome = document.getElementById('nome').value.trim();
-      const usuario = document.getElementById('usuario').value.trim();
-      const email = document.getElementById('email').value.trim();
-
-      if (!nome || !usuario || !email) {
-        alert("Preencha todos os campos.");
-        return;
-      }
-
-      // Salva no Firebase
-      firebase.database().ref('usuarios/' + usuario).set({
-        nome: nome,
-        usuario: usuario,
-        email: email,
-        aprovado: false
-      }).then(() => {
-        // Redireciona com o nome de usuário na URL
-        window.location.href = `perfil.html?usuario=${encodeURIComponent(usuario)}`;
-      }).catch(error => {
-        alert("Erro ao salvar os dados: " + error.message);
-      });
-    });
-  </script>
 </body>
-            </html>
+</html>
