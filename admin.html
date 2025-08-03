@@ -86,29 +86,36 @@
     </div>
   </div>
 
-  <script>
-    const users = JSON.parse(localStorage.getItem('perfisPendentes')) || [];
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
 
-    function aprovarUsuario(index) {
-      const aprovados = JSON.parse(localStorage.getItem('perfisAprovados')) || [];
-      aprovados.push(users[index]);
-      localStorage.setItem('perfisAprovados', JSON.stringify(aprovados));
-      users.splice(index, 1);
-      localStorage.setItem('perfisPendentes', JSON.stringify(users));
-      alert("Usuário aprovado com sucesso!");
-      renderUsuarios();
-    }
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHGSrN1FM91XYzEonqq827aMGGw0yEtWI",
+      authDomain: "vibe-chat-b1e67.firebaseapp.com",
+      databaseURL: "https://vibe-chat-b1e67-default-rtdb.firebaseio.com",
+      projectId: "vibe-chat-b1e67",
+      storageBucket: "vibe-chat-b1e67.appspot.com",
+      messagingSenderId: "161333976914",
+      appId: "1:161333976914:web:093413f938f7279468248b"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const userList = document.getElementById('userList');
+    let usuariosPendentes = [];
 
     function renderUsuarios() {
-      const userList = document.getElementById('userList');
       userList.innerHTML = '';
 
-      if (users.length === 0) {
+      if (usuariosPendentes.length === 0) {
         userList.innerHTML = '<p class="empty-msg">Nenhum perfil pendente de aprovação.</p>';
         return;
       }
 
-      users.forEach((user, index) => {
+      usuariosPendentes.forEach((user, index) => {
         const div = document.createElement('div');
         div.className = 'user-card';
         div.innerHTML = `
@@ -118,13 +125,36 @@
             <p><strong>Email:</strong> ${user.email}</p>
             <p><strong>Experiência:</strong> ${user.experiencia}</p>
           </div>
-          <button class="approve-btn" onclick="aprovarUsuario(${index})">Aprovar</button>
+          <button class="approve-btn" onclick="aprovarUsuario('${user.usuario}')">Aprovar</button>
         `;
         userList.appendChild(div);
       });
     }
 
-    renderUsuarios();
+    function carregarPendentes() {
+      db.ref('usuarios_pendentes').on('value', snapshot => {
+        const dados = snapshot.val() || {};
+        usuariosPendentes = Object.values(dados);
+        renderUsuarios();
+      });
+    }
+
+    function aprovarUsuario(usuario) {
+      db.ref('usuarios_pendentes/' + usuario).once('value').then(snapshot => {
+        const dados = snapshot.val();
+        if (dados) {
+          // Move para aprovados
+          db.ref('usuarios_aprovados/' + usuario).set(dados).then(() => {
+            // Remove dos pendentes
+            db.ref('usuarios_pendentes/' + usuario).remove().then(() => {
+              alert("Usuário aprovado com sucesso!");
+            });
+          });
+        }
+      });
+    }
+
+    carregarPendentes();
   </script>
 </body>
-  </html>
+</html>
