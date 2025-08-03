@@ -136,15 +136,18 @@
       }
 
       db.ref('usuarios/' + usuario).set({
-        nome, usuario, email, senha,
+        nome,
+        usuario,
+        email,
+        senha,
         aprovado: false
       }).then(() => {
-        alert("Cadastro enviado. Aguarde aprovação do administrador.");
-        window.location.href = 'perfil.html';
+        alert("Cadastro enviado com sucesso! Aguarde a aprovação do administrador.");
+        window.location.href = `perfil.html?usuario=${encodeURIComponent(usuario)}`;
       }).catch(error => {
         alert("Erro ao cadastrar: " + error.message);
       });
     });
   </script>
 </body>
-            </html>
+</html>
