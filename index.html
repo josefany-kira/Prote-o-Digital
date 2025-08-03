@@ -130,7 +130,26 @@
     </div>
   </div>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+
   <script>
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHGSrN1FM91XYzEonqq827aMGGw0yEtWI",
+      authDomain: "vibe-chat-b1e67.firebaseapp.com",
+      databaseURL: "https://vibe-chat-b1e67-default-rtdb.firebaseio.com",
+      projectId: "vibe-chat-b1e67",
+      storageBucket: "vibe-chat-b1e67.appspot.com",
+      messagingSenderId: "161333976914",
+      appId: "1:161333976914:web:093413f938f7279468248b"
+    };
+
+    // Inicializa o Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
 
@@ -143,11 +162,18 @@
         return;
       }
 
-      sessionStorage.setItem('login_nome', nome);
-      sessionStorage.setItem('login_usuario', usuario);
-      sessionStorage.setItem('login_email', email);
-
-      window.location.href = 'perfil.html';
+      // Salva no Firebase
+      firebase.database().ref('usuarios/' + usuario).set({
+        nome: nome,
+        usuario: usuario,
+        email: email,
+        aprovado: false
+      }).then(() => {
+        // Redireciona com o nome de usuário na URL
+        window.location.href = `perfil.html?usuario=${encodeURIComponent(usuario)}`;
+      }).catch(error => {
+        alert("Erro ao salvar os dados: " + error.message);
+      });
     });
   </script>
 </body>
