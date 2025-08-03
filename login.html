@@ -3,9 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Iniciar Sessão - Veb Chat</title>
+  <title>Entrar - Vibe Chat</title>
   <style>
-    /* ... mesmo CSS da anterior para manter o visual ... */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 1000px;
+      width: 100%;
+      padding: 20px;
+    }
+    .content {
+      display: flex;
+      width: 100%;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      max-width: 900px;
+    }
+    .left-side {
+      flex: 1;
+      background-color: #1877f2;
+      color: white;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .left-side h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+    .left-side p {
+      font-size: 18px;
+    }
+    .right-side {
+      flex: 1;
+      padding: 40px;
+    }
+    .right-side h2 {
+      margin-bottom: 20px;
+      font-size: 26px;
+      color: #333;
+      text-align: center;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #1877f2;
+      border: none;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover { background-color: #155db8; }
+    @media (max-width: 768px) {
+      .content { flex-direction: column; }
+      .left-side, .right-side { padding: 20px; }
+    }
   </style>
 </head>
 <body>
@@ -69,4 +145,4 @@
     });
   </script>
 </body>
-  </html>
+            </html>
