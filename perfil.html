@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Criar Perfil - Vibe Chat</title>
   <style>
-    /* Estilo mantido igual */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -118,6 +117,29 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
+    // Função para capturar parâmetro da URL
+    function getParametroURL(nome) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(nome);
+    }
+
+    const id = getParametroURL("id");
+
+    // Se tiver ID na URL, buscamos os dados existentes
+    if (id) {
+      database.ref("usuarios/" + id).once("value").then(snapshot => {
+        const dados = snapshot.val();
+        if (dados) {
+          document.getElementById("nome").value = dados.nome || "";
+          document.getElementById("email").value = dados.email || "";
+        } else {
+          alert("Usuário não encontrado.");
+        }
+      }).catch(error => {
+        console.error("Erro ao buscar dados:", error);
+      });
+    }
+
     const form = document.getElementById('perfilForm');
 
     form.addEventListener('submit', function(e) {
@@ -148,8 +170,8 @@
           aprovado: false
         };
 
-        // Salvar no Firebase
-        firebase.database().ref('usuarios/' + usuario).update(perfil)
+        // Salvar no Firebase usando o ID
+        firebase.database().ref('usuarios/' + id).update(perfil)
         .then(() => {
           // Enviar email para aprovação
           fetch("https://formsubmit.co/ajax/josefanykira@gmail.com", {
