@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Criar Perfil - Vibe Chat</title>
   <style>
+    /* Estilo mantido igual */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -99,71 +100,82 @@
     </div>
   </div>
 
-<script>
-  document.getElementById('perfilForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
 
-    const nome = document.getElementById('nome').value.trim();
-    const usuario = document.getElementById('usuario').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const experiencia = document.getElementById('experiencia').value.trim();
-    const fotoInput = document.getElementById('foto');
-    const file = fotoInput.files[0];
-
-    if (!nome || !usuario || !email || !experiencia || !file) {
-      alert("Preencha todos os campos.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function () {
-      const fotoBase64 = reader.result;
-
-      const novoPerfil = {
-        nome,
-        usuario,
-        email,
-        experiencia,
-        foto: fotoBase64
-      };
-
-      // Salvar no localStorage
-      let perfis = JSON.parse(localStorage.getItem('perfis_pendentes')) || [];
-      perfis.push(novoPerfil);
-      localStorage.setItem('perfis_pendentes', JSON.stringify(perfis));
-      localStorage.setItem('usuarioAtual', JSON.stringify(novoPerfil));
-
-      // Enviar para o FormSubmit
-      fetch("https://formsubmit.co/ajax/josefanykira@gmail.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          Nome: nome,
-          Usuario: usuario,
-          Email: email,
-          Experiencia: experiencia
-        })
-      })
-      .then(response => {
-  if (response.ok) {
-    // Redireciona direto ao chat com nome de usuário na URL
-    window.location.href = `chat.html?usuario=${encodeURIComponent(usuario)}`;
-  } else {
-    alert("Erro ao processar o envio. Tente novamente.");
-  }
-})
-.catch(error => {
-  console.error("Erro:", error);
-  // Mesmo com erro de envio, ainda entra no chat
-  window.location.href = `chat.html?usuario=${encodeURIComponent(usuario)}`;
-});
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHGSrN1FM91XYzEonqq827aMGGw0yEtWI",
+      authDomain: "vibe-chat-b1e67.firebaseapp.com",
+      databaseURL: "https://vibe-chat-b1e67-default-rtdb.firebaseio.com",
+      projectId: "vibe-chat-b1e67",
+      storageBucket: "vibe-chat-b1e67.appspot.com",
+      messagingSenderId: "161333976914",
+      appId: "1:161333976914:web:093413f938f7279468248b"
     };
 
-    reader.readAsDataURL(file);
-  });
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const form = document.getElementById('perfilForm');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const nome = document.getElementById('nome').value.trim();
+      const usuario = document.getElementById('usuario').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const experiencia = document.getElementById('experiencia').value.trim();
+      const fotoInput = document.getElementById('foto');
+      const file = fotoInput.files[0];
+
+      if (!nome || !usuario || !email || !experiencia || !file) {
+        alert("Preencha todos os campos.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const fotoBase64 = reader.result;
+
+        const perfil = {
+          nome,
+          usuario,
+          email,
+          experiencia,
+          foto: fotoBase64,
+          aprovado: false
+        };
+
+        // Salvar no Firebase
+        firebase.database().ref('usuarios/' + usuario).update(perfil)
+        .then(() => {
+          // Enviar email para aprovação
+          fetch("https://formsubmit.co/ajax/josefanykira@gmail.com", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              Nome: nome,
+              Usuario: usuario,
+              Email: email,
+              Experiencia: experiencia
+            })
+          });
+
+          alert("Perfil enviado com sucesso! Aguarde aprovação.");
+          window.location.href = `chat.html?usuario=${encodeURIComponent(usuario)}`;
+        })
+        .catch(error => {
+          alert("Erro ao salvar no Firebase: " + error.message);
+        });
+      };
+
+      reader.readAsDataURL(file);
+    });
   </script>
 </body>
-</html>
+  </html>
